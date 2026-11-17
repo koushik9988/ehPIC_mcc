@@ -9,6 +9,16 @@ This repository contains an electrostatic 1D Particle-in-Cell (PIC) code develop
 </p>
 
 
+
+[landau (1).pdf](https://github.com/user-attachments/files/34965185/landau.1.pdf)
+[disp_uh.pdf](https://github.com/user-attachments/files/34965230/disp_uh.pdf)
+[shap_diag.pdf](https://github.com/user-attachments/files/34965227/shap_diag.pdf)
+[swarm_plot.pdf](https://github.com/user-attachments/files/34965223/swarm_plot.pdf)
+[dispersion_icw.pdf](https://github.com/user-attachments/files/34965215/dispersion_icw.pdf)
+
+
+
+
 ## Requirements
 - Python3 : Required for data processing, and data visualization. 
 - python3-dev : Provides Python development headers needed for matplotlibcpp.
