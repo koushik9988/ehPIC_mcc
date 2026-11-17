@@ -32,6 +32,19 @@ This repository contains an electrostatic 1D Particle-in-Cell (PIC) code develop
 - NumPy
 - Scipy
 
+## Features
+
+- Poisson solvers: `direct` (tridiagonal), `cg`, `pcg`, `spectral`, `nlp` (Non-Linear Newton–Raphson for Boltzmann electrons)
+- Boundary conditions: `pbc`, `open`, `dirneu` (see below)
+- Arbitrary number of species, each with its own mass, charge, temperature, density fraction, weight and loading profile
+- Species sub-cycling (heavy species pushed every `sub_cycle_interval` steps) (not widely tested)
+- External magnetic field (`B`, `theta`, `azimuth`) and a uniform external E field / reduced field
+- Time-varying (RF) boundary voltages
+- Monte-Carlo collisions: e–H / e–Ar elastic, excitation, ionization, positive-ion elastic, negative-ion elastic, electron detachment
+- **Emitters**: surface thermal emission, drift (current-density) injection and plasma-reservoir injection
+- **Plasma source region** with reflux for sheath simulations, including negative ions (electronegative plasma)
+- OpenMP-parallel push / deposit and restart from dump file in the event of system crashes or restarting form last saved point.
+
 ## Directory Structure
 
 ```
