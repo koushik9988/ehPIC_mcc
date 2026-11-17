@@ -370,7 +370,87 @@ for(int i = 2; i < species_no; i++)
 }
 ```
 
- # Data processing and visualization
+## Boundary conditions
+ 
+| `bc` | Left | Right | Particles |
+|---|---|---|---|
+| `pbc` | periodic | periodic | wrap around |
+| `open` | Dirichlet `voltage_left` | Dirichlet `voltage_right` | absorbed at both walls |
+| `dirneu` | Dirichlet `voltage_left` (wall/electrode) | Neumann `dphi_dx` (plasma source side) | absorbed at the left wall; right side is a **source/reflux plane** (see below) |
+ 
+For `dirneu`:
+- Particles that reach `x ≥ x0 + xL` are **re-thermalised** and sent back into the plasma (`Species::source_reemit`, flux-weighted half-Maxwellian at the species temperature, perpendicular components resampled).
+- Heavy negative species (every negatively charged species except the electron) are **removed** in the last 10 % of the box (`x ≥ 0.9 xL`) so that negative ions do not accumulate at the source.
+- Emitters and the plasma source are active only in this mode.
+---
+ 
+## Emitters and sources
+ 
+> This part of the code was recently extended. There are **three independent mechanisms**, all for `bc = dirneu`.
+ 
+### 1. Wall emitters — `[Emitters]` section (`Emitter` class)
+ 
+Each emitter injects particles from a plane at `emitter_loc` every step. The injection mode is chosen **automatically from the keys you give**:
+ 
+| Mode | Selected when | Particle count | Weight |
+|---|---|---|---|
+| **Surface (thermal emission)** | `spwt` is given and > 0 | one-sided thermal flux Γ = n·√(kT/2πm) with `n = density` | emitter's own `spwt` |
+| **Current / drift** | `drift_velocity` is given (and no `spwt`) | J = n·q·v_d | species default weight |
+| **Reservoir** | neither of the above | one-sided thermal flux with the species' bulk density (`normden`) | species default weight |
+ 
+Velocities are always half-Maxwellian in the normal direction (flux-weighted, `vx = v_t √(−2 ln(1−U))`) and full Maxwellian in the two transverse directions. Each particle is advanced a random fraction of a time step so injection is not clustered on the boundary. The fractional part of the macro-particle count is injected stochastically.
+ 
+```ini
+[Emitters]
+count = 1                       # number of emitters (0 disables the section)
+ 
+emitter_0.emitter_loc  = 0      # position of the emitter plane (normalized grid units)
+emitter_0.density      = 1e15   # emitter plasma density [m^-3]
+emitter_0.emitter_area = 1      # emitting area [m^2]
+emitter_0.species_id1  = 2      # first emitted species (index in [Species]); required
+emitter_0.species_id2  = 0      # second emitted species (optional, -1 = none)
+emitter_0.direction    = 1      # +1 inject toward +x, -1 toward -x, 0 = auto (left half -> +1, right half -> -1)
+emitter_0.temp1        = 0.01   # injection temperature of species_id1 [eV] (<=0 -> species temperature)
+emitter_0.temp2        = 0.01   # injection temperature of species_id2 [eV] (optional)
+emitter_0.spwt         = 1e8    # macro-particle weight -> selects surface-emission mode
+#emitter_0.drift_velocity = 1   # normalized drift speed -> selects current-injection mode
+```
+ 
+| Key | Required | Default | Description |
+|---|---|---|---|
+| `emitter_loc` | yes | – | emitter plane position |
+| `density` | yes | – | density used in the flux/current formula |
+| `emitter_area` | yes | – | emitting area |
+| `species_id1` | yes | – | species index to emit |
+| `species_id2` | no | `-1` | optional second species emitted from the same plane (ignored if equal to `species_id1`) |
+| `direction` | no | `0` | injection direction (see above) |
+| `temp1`, `temp2` | no | `-1` | injection temperatures in eV; `≤ 0` uses the species temperature |
+| `spwt` | no | – | emitter-specific weight; **turns on surface-emission mode** |
+| `drift_velocity` | no | – | **turns on current-injection mode** (used when `spwt` is absent) |
+| `flux_weighted` | no | `1` | read for compatibility; flux-weighted sampling is always used |
+| `temp`, `numparticle` | no | `0` | **deprecated**, kept for old input files |
+ 
+Note: `domain.current_density` (used for diagnostics) is computed from the first emitter's `density` and `drift_velocity`.
+
+
+## Output
+ 
+Everything is written below `[file] output`:
+ 
+```
+<output>/
+├── metadata.h5            DT_coeff, wpe, wpi, LDe, LDi, species info (read by the Python scripts)
+├── field/data_<ts>.h5     potential, field, densities, ...   (every write_interval)
+├── phase/phase_<ts>.h5    particle x, v, ...                  (every write_interval_phase)
+├── restart dump (dump.h5) for --restart-file
+└── logs/                  CSV diagnostics
+    ├── energy_log.csv, ke_components_log.csv, momentum_log.csv
+    ├── collision_freq_log.csv, domain_collision_freq_log.csv
+    ├── electronegativity_log.csv   (ts, time, alpha = n-/ne)
+    └── particle_number_log.csv
+```
+
+ ## Data processing and visualization
  1. Plot kinetic enegy ,potential enegy and total enegy
      ```bash
     python3 ke_plot.py ../name_of_outputfolder
@@ -387,6 +467,16 @@ for(int i = 2; i < species_no; i++)
 ## Contributors
 - [Kaushik Kalita](https://github.com/koushik9988)
 - [Rakesh Moulick](https://github.com/rakeshmoulick)
+
+## Extras
+ 
+- Keep species order **electron → ion → negion → others**; the source, recombination and α diagnostic hard-code indices 0, 1, 2.
+- Several keys are read **without defaults** and the run aborts if missing: all of `[time]`, `[diagnostics]`, `[domain]`, `[normalization]`, `[simulation]` (including `dphi_dx`, `ionfixed`), `[solver]` (including `solver_state`), `[ExternalField]` (including `E_ext`), `[boundary_potential]`, `[collision]`, `[visualplot]`. Copy a working file from `inputfiles/` as a template — note `input_run_negion_emitter.ini` predates these keys and lacks `dphi_dx`, `solver_state` and `E_ext` (and `[visualplot]`-style additions), so add them before use.
+- `dphi_dx` and `x0` are parsed as integers.
+- For emitter runs, `spwt` should keep the macro-particle count manageable: the injected count per step is `n·√(kT/2πm)·A·Δt / spwt`.
+- Set `GAS_DENSITY = 0` to switch off all collisions (cross-section files are still loaded from `../cross_section`).
+- Use `--threads 1` to force the serial push/deposit path (useful for debugging reproducibility).
+ 
   
 
 
