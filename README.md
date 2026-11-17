@@ -1,4 +1,4 @@
-# Electrostatic 1D Particle-in-Cell (PIC) Code , ePIC++
+# Electrostatic 1D Particle-in-Cell (PIC) Code , ehPIC++_mcc
 
 This repository contains an electrostatic 1D Particle-in-Cell (PIC) code developed for simulating plasma systems. The code is capable of simulating basic plasma phenomena, Beam_Plasma Interactions, Monte-Carlo collision (electron-Neutral).
 
