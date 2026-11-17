@@ -122,13 +122,28 @@ export PATH="/c/Users/<YOUR_USERNAME>/AppData/Local/Programs/Python/Python312:$P
 ```
 
 
-## Running the Code
-1. Configure the simulation parameters in the `input.ini` file.
-2. Run the code:
-The executble will be located in the build directory after building with cmake.
-    ```bash
-    ./ePIC++ ../inputfiles/input.ini
-    ```
+## Running
+ 
+```bash
+./ePIC_mcc <input_file> [options]
+```
+ 
+| Option | Meaning |
+|---|---|
+| `--threads <n>` | number of OpenMP threads (default and upper limit: hardware threads) |
+| `--restart-file <file>` | resume from a dump/phase file (positions and velocities are read from it) |
+| `-h`, `--help` | help |
+| `-v`, `--version` | version |
+ 
+Examples:
+ 
+```bash
+./ePIC_mcc ../inputfiles/input.ini
+./ePIC_mcc ../inputfiles/sheath/input_sheath2.ini --threads 8
+./ePIC_mcc ../inputfiles/input.ini --restart-file ../datafiles/data/phase_1000.h5 --threads $(nproc)
+```
+ 
+---
 
 # Explanation of `input.ini` File Parameters
 
