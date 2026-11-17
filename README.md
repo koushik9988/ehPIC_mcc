@@ -11,11 +11,12 @@ This repository contains an electrostatic 1D Particle-in-Cell (PIC) code develop
 
 ### Benchamrk and validation Plots
 
-* **Landau Damping Analysis:** [**Landau Damping Analysis:**](https://github.com/user-attachments/files/34965185/landau.1.pdf)
-* **Upper Hybrid Dispersion:** [View Dispersion Relation (UH)](https://github.com/user-attachments/files/34965230/disp_uh.pdf)
-* **Phase Space / Phase Diagram:** [View Phase Space Diagnostic](https://github.com/user-attachments/files/34965227/shap_diag.pdf)
-* **Electron Swarm Parameters:** [View Swarm Plot](https://github.com/user-attachments/files/34965223/swarm_plot.pdf)
-* **Ion Acoustic Wave Dispersion:** [View ICW Dispersion](https://github.com/user-attachments/files/34965215/dispersion_icw.pdf)
+* [**Landau Damping Analysis**](https://github.com/user-attachments/files/34965185/landau.1.pdf)
+* [**Upper Hybrid Dispersion**](https://github.com/user-attachments/files/34965230/disp_uh.pdf)
+* [**Ion cyclotron Wave Dispersion**](https://github.com/user-attachments/files/34965215/dispersion_icw.pdf)
+* [**Shape Function**](https://github.com/user-attachments/files/34965227/shap_diag.pdf)
+* [**Electron Swarm Parameters**](https://github.com/user-attachments/files/34965223/swarm_plot.pdf)
+
 
 
 
